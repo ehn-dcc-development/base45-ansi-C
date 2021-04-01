@@ -1,3 +1,5 @@
 *.o 
 *.a
 *.core
+test
+*.d
