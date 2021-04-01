@@ -92,6 +92,12 @@ int base45_decode(unsigned char * dst, size_t * _max_dst_len, const char * src, 
   size_t out_len = 0, max_dst_len;
   max_dst_len = _max_dst_len  ? *_max_dst_len : src_len;
 
+  if (dst == NULL && _max_dst_len == NULL)
+	return -2;
+
+  if (src == NULL)
+	return -2;
+
   if (src_len == 0)
 	src_len = strlen(src);
 
