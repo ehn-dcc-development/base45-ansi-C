@@ -1,6 +1,5 @@
-#include <ctype.h> 
-#include <strings.h>
-#include <stdio.h>
+#include <ctype.h> 	// for size_t
+#include <string.h> 	// for strlen()
 
 /*                  Table 1: The Base 45 Alphabet
 
