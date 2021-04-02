@@ -1,0 +1,90 @@
+.Dd April 1, 2021
+.Dt BASE45 1
+.Os
+.Sh NAME
+.Nm base45_encode, base45_decode
+.Nd conversion routines
+.Sh LIBRARY
+.Lb libbase45
+.Sh SYNOPSIS
+.In base45.h
+.Ft int
+.Fn base45_encode(char * dstOrNull, size_t *dst_lenOrNull, const unsigned char * src, size_t src_len);
+.Ft int 
+.Fn base45_decode(unsigned char * dstOrNull, size_t *dst_lenOrNull, const char * src, size_t src_len);
+.Sh DESCRIPTION
+The base45 format is designed to match the Alphanummeric set of Mode 2
+or 0010 of ISO/IEC 18004 Qr codes.
+.Pp
+These
+.Fn base45_encode
+will encode a binary buffer 
+.Fa src
+of size
+.Fa src_len
+to a 
+.Ql \e0 
+terminated string. The 
+.Fn base45_decode
+routine will decode up to
+.Fa src_len
+bytes from the
+.Fa src
+buffer back into binary. The buffer
+.Fa src
+does not need to be 
+.Ql \e0
+terminated unless
+.Fa src_len
+is set to
+.Ql 0 .
+If
+.Fa src_len
+is set to
+.Ql 0
+the routine will decode the
+.Fa src
+until the terminating 
+.Ql \e0 . 
+.Pp
+.Sh RESULTS
+The results are  stored in the
+.Fa *dstOrNull
+buffer that; with the size specified by
+.Fa *dst_lenOrNull .
+If the length passed is 0,
+.Nm base45_encode 
+will assume that the buffer pointed at by
+.Fa *dstOrNull .
+In either case the actual decoded length of the entire string is 
+returned in 
+.Fa *dst_lenOrNull .
+The terminating
+.Ql \e0
+added by
+.Fn base45_encode 
+does not count for the length.
+If 
+.Fa *dstOrNull
+is 
+.Ql NULL
+then the actual results will not be stored.
+.Sh RESULTS
+The functions will return a non 0 value on error. This is currently only the
+case for base45_decode - when it finds an character not in the base45 set
+or when the number of characters in the source is not a multiple of 2 and 3.
+.Sh HISTORY
+This utiltiy was developed as part of the European Health Network
+their Digital Green Certificate effort during the 2020-2021 COVID19
+Crisis.
+.Sh BUGS
+Note that this utility is designed for the relatively modests strings that
+are encoded into Qr barcodes; and hence does not have a nice streaming 
+interface or similar.
+.Sh STANDARDS
+The
+.Nm
+utility conforms to ALPHANUMMERIC character set from section 7.44 of
+ISO/EIC-18004.  The actual set is 45 characters:
+.Pp
+.Dl 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:";

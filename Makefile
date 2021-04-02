@@ -29,7 +29,7 @@ $(TARGET_EXEC): $(SRCS)
 	$(CC) $(SRCS) -DBASE45_UTIL -o $@ $(LDFLAGS) 
 
 $(TARGET_TEST): $(OBJS_TEST) $(TARGET_LIB)
-	$(CC) $(OBJS_TEST) -o $@ $(LDFLAGS) -lbase64 -L.
+	$(CC) $(OBJS_TEST) -o $@ $(LDFLAGS) -lbase45 -L.
 
 $(TARGET_LIB): $(OBJS)
 	ar -rcs $@ $<

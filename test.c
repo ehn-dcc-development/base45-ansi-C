@@ -18,7 +18,6 @@ void check(char * in, char * out) {
 
 	assert(0 == base45_decode(dec, &dlen, out, strlen(out)));
 	assert(dlen == strlen(in));
-for(int i = 0; i < dlen; i++) printf("%d %d %c %c %d\n", i, dec[i],dec[i],in[i],in[i]);
 	assert(0 == bcmp(dec,in,dlen));
 
 	printf("base64(\"%s\") -> \"%s\"\n", (char*)dec, enc);
