@@ -264,11 +264,17 @@ int main(int argc, char ** argv) {
 #endif
 
         while(!feof(in)) {
-        	unsigned char buff[       3 * 1024 ]; // multiple chosen to allow continuation.
-        	unsigned char outbuf[ 3 * 3 * 1024 ];
+        	unsigned char buff[       32 * 1024 ]; // multiple chosen to allow continuation.
+        	unsigned char outbuf[ 3 * 32 * 1024 ];
 		size_t olen = sizeof(outbuf);
-		size_t len = fread(buff, 1, 3 * 1024, in);
+		size_t len = fread(buff, 1, 32 * 1024, in);
 
+#ifndef SWEDEN
+		if (!feof(in)) {
+			fprintf(stderr,"base45 - input too large.\n");
+			exit(1);
+		};
+#endif
 		buff[len] = 0;
 
 		if (len) {
