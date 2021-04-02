@@ -165,9 +165,11 @@ int base45_encode(char * dst, size_t *_max_dst_len, const unsigned char * src, s
                 dst[ out_len ] = BASE45_CHARSET[r];
         out_len++;
   };
+
   if (dst) for(int i = 0, j = out_len -1; i < j; i++, j--) {
 	unsigned char x = dst[i]; dst[i] = dst[j]; dst[j] = x;
   };
+
   if (_max_dst_len)
      *_max_dst_len = out_len;
   e = 0;
@@ -219,7 +221,10 @@ int base45_decode(unsigned char * dst, size_t * _max_dst_len, const char * src, 
             !BN_add(result, result, add))
                goto e;
   }
-  out_len = BN_bn2bin(result, dst);
+  if (dst)
+      out_len = BN_bn2bin(result, dst);
+  else
+      out_len = BN_num_bytes(result);
 
   if (_max_dst_len)
         *_max_dst_len = out_len;
