@@ -145,21 +145,11 @@ int base45_encode(char * dst, size_t *_max_dst_len, const unsigned char * src, s
   max_dst_len = _max_dst_len ? *_max_dst_len : src_len * 4;
 
   BIGNUM * divident = BN_bin2bn(src, src_len, NULL);
-  BIGNUM * remainder = BN_new();
-  BIGNUM * bigQrCharsetLen = BN_new();
-
-  BN_CTX * ctx = BN_CTX_new();
-
-  if (!ctx || !divident || !remainder || !bigQrCharsetLen)
+  if (!divident)
 	goto e;
 
-  BN_set_word(bigQrCharsetLen, 45UL);
-
   while(!BN_is_zero(divident)) { 
-        unsigned long r;
-
- 	if (!BN_div(divident, remainder, divident, bigQrCharsetLen, ctx)) goto e;
-        r = BN_get_word(remainder);
+        unsigned long r = BN_div_word(divident, 45UL);
 
         if (out_len < max_dst_len && dst)
                 dst[ out_len ] = BASE45_CHARSET[r];
@@ -175,10 +165,7 @@ int base45_encode(char * dst, size_t *_max_dst_len, const unsigned char * src, s
   e = 0;
 e:
   BN_free(divident);
-  BN_free(remainder);
-  BN_free(bigQrCharsetLen);
 
-  BN_CTX_free(ctx);
   return e;
 }
 
@@ -310,4 +297,3 @@ int main(int argc, char ** argv) {
 };
 #endif
 
-		
