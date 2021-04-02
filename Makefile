@@ -14,15 +14,16 @@ INC_FLAGS :=
 
 CPPFLAGS ?= $(INC_FLAGS) -MMD -MP
 
-tests: all
-	for i in 1 7 13 10 103 1002 10009 100007 1000001 0; do \
+tests: all $(TARGET_TEST)
+	./test
+	for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 17 19 41 42 43 103 1002 10009 100007 1000001 0; do \
 		openssl rand $$i > $$TMPDIR/x; \
 	 	cat $$TMPDIR/x | ./base45 | ./base45 -d > $$TMPDIR/y; \
                 diff $$TMPDIR/x $$TMPDIR/y || exit 1; \
 	done; \
 	rm  $$TMPDIR/x $$TMPDIR/y 
 
-all: $(TARGET_EXEC) $(TARGET_LIB)
+all: $(TARGET_EXEC) $(TARGET_LIB) 
 
 $(TARGET_EXEC): $(SRCS)
 	$(CC) $(SRCS) -DBASE45_UTIL -o $@ $(LDFLAGS) 
