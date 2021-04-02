@@ -1,5 +1,6 @@
-TARGET_EXEC ?= test
-TARGET_LIB ?= libbase64.a
+TARGET_TEST ?= test
+TARGET_EXEC ?= base45
+TARGET_LIB ?= libbase45.a
 
 SRC_DIRS ?= .
 
@@ -13,10 +14,20 @@ INC_FLAGS :=
 
 CPPFLAGS ?= $(INC_FLAGS) -MMD -MP
 
-all: $(TARGET_EXEC) $(TARGET_LIB)
-	./$(TARGET_EXEC)
+tests: all
+	for i in 1 7 13 10 103 1002 10009 100007 1000001 0; do \
+		openssl rand $$i > $$TMPDIR/x; \
+	 	cat $$TMPDIR/x | ./base45 | ./base45 -d > $$TMPDIR/y; \
+                diff $$TMPDIR/x $$TMPDIR/y || exit 1; \
+	done; \
+	rm  $$TMPDIR/x $$TMPDIR/y 
 
-$(TARGET_EXEC): $(OBJS_TEST) $(TARGET_LIB)
+all: $(TARGET_EXEC) $(TARGET_LIB)
+
+$(TARGET_EXEC): $(SRCS)
+	$(CC) $(SRCS) -DBASE45_UTIL -o $@ $(LDFLAGS) 
+
+$(TARGET_TEST): $(OBJS_TEST) $(TARGET_LIB)
 	$(CC) $(OBJS_TEST) -o $@ $(LDFLAGS) -lbase64 -L.
 
 $(TARGET_LIB): $(OBJS)

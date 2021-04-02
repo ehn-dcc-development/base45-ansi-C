@@ -18,13 +18,14 @@
       11 B            23 N            35 Z
 
 */
+
 static const char BASE45_CHARSET[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:";
 
 static char _C2I[256] = {
 	255,255,255,255, 255,255,255,255, 255,255,255,255, 255,255,255,255,
 	255,255,255,255, 255,255,255,255, 255,255,255,255, 255,255,255,255,
 	36, 255,255,255,  37, 38,255,255, 255,255, 39, 40, 255, 41, 42, 43,
-         0,   1,  2,  3,   4,  5,  6,  7,   8,  9,255,255, 255,255,255,255, 
+         0,   1,  2,  3,   4,  5,  6,  7,   8,  9, 44,255, 255,255,255,255, 
 
         255, 10, 11, 12,  13, 14, 15, 16,  17, 18, 19, 20,  21, 22, 23, 24, /* uppercase */
          25, 26, 27, 28,  29, 30, 31, 32,  33, 34, 35, 35, 255,255,255,255,
@@ -134,4 +135,72 @@ int base45_decode(unsigned char * dst, size_t * _max_dst_len, const char * src, 
   return 0;
 }
 
+#ifdef BASE45_UTIL
+#include <stdio.h>
+#include <stdlib.h>
 
+int main(int argc, char ** argv) {
+	FILE * in = stdin;
+	FILE * out = stdout;
+	int decode = 0;
+	int at  = 1;
+
+	if (argc > 1 && argv[at][0] == '-') {
+		if (argv[at][1] == 'd')
+			decode = 1;
+		else {
+			fprintf(stderr,"Syntax: %s [-d] [infile [outfile]]\n", argv[0]);
+			exit(1);
+		};
+		at++; argc--;
+	};
+	if (argc > 1) {
+		if (NULL == (in = fopen(argv[at],"r"))) {
+			perror("Cannot open input file for reading:");
+			exit(1);
+		};
+		at++; argc--;
+	};
+	if (argc > 1) {
+		if (NULL == (out = fopen(argv[at],"w"))) {
+			perror("Cannot open out file for writing:");
+			exit(1);
+		};
+		at++; argc--;
+	};
+
+#ifdef VALIDATE
+	for(int i = 0; i < 45; i++) assert(i ==  _C2I[BASE45_CHARSET[i]]); 
+#endif
+
+        while(!feof(in)) {
+        	unsigned char buff[       3 * 1024 ]; // multiple chosen to allow continuation.
+        	unsigned char outbuf[ 3 * 3 * 1024 ];
+		size_t olen = sizeof(outbuf);
+		size_t len = fread(buff, 1, 3 * 1024, in);
+
+		buff[len] = 0;
+
+		if (len) {
+			int e;
+			if (decode) 
+				e = base45_decode(outbuf, &olen, (char *) buff, len);
+			else
+				e = base45_encode((char *)outbuf, &olen, buff, len);
+
+			if (e) {
+				fprintf(stderr,"base45 %s failed\n", decode ? "decode" : "encode");
+				exit(1);
+			};
+
+			if (olen)
+				fwrite(outbuf, 1, olen, out);
+		};
+	}
+	fclose(out);
+
+	return(0);
+};
+#endif
+
+		
