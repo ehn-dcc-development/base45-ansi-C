@@ -11,3 +11,7 @@ For this reason - the industry generally encodes these in base45. A document for
 
     ```https://datatracker.ietf.org/doc/draft-faltstrom-base45/```
 
+## Testing
+
+The test.sh script does a simple test against the Javascript and Python versions of this utility.
+
