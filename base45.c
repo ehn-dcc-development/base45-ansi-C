@@ -43,6 +43,7 @@ static char _C2I[256] = {
 	255,255,255,255, 255,255,255,255, 255,255,255,255, 255,255,255,255,
 };
 
+#ifdef SWEDEN
 int base45_encode(char * dst, size_t *_max_dst_len, const unsigned char * src, size_t src_len) {
   size_t out_len = 0, max_dst_len;
   max_dst_len = _max_dst_len ? *_max_dst_len : src_len * 4;
@@ -134,7 +135,108 @@ int base45_decode(unsigned char * dst, size_t * _max_dst_len, const char * src, 
 
   return 0;
 }
+#else
+#include <openssl/bn.h>
+#include <assert.h>
 
+int base45_encode(char * dst, size_t *_max_dst_len, const unsigned char * src, size_t src_len) {
+  int e = 0;
+  size_t out_len = 0, max_dst_len;
+  max_dst_len = _max_dst_len ? *_max_dst_len : src_len * 4;
+
+  BIGNUM * divident = BN_bin2bn(src, src_len, NULL);
+  BIGNUM * remainder = BN_new();
+  BIGNUM * bigQrCharsetLen = BN_new();
+
+  BN_CTX * ctx = BN_CTX_new();
+
+  if (!ctx || !divident || !remainder || !bigQrCharsetLen)
+	goto e;
+
+  BN_set_word(bigQrCharsetLen, 45UL);
+
+  while(!BN_is_zero(divident)) { 
+        unsigned long r;
+
+ 	if (!BN_div(divident, remainder, divident, bigQrCharsetLen, ctx)) goto e;
+        r = BN_get_word(remainder);
+
+        if (out_len < max_dst_len && dst)
+                dst[ out_len ] = BASE45_CHARSET[r];
+        out_len++;
+  };
+  if (dst) for(int i = 0, j = out_len -1; i < j; i++, j--) {
+	unsigned char x = dst[i]; dst[i] = dst[j]; dst[j] = x;
+  };
+  if (_max_dst_len)
+     *_max_dst_len = out_len;
+  e = 0;
+e:
+  BN_free(divident);
+  BN_free(remainder);
+  BN_free(bigQrCharsetLen);
+
+  BN_CTX_free(ctx);
+  return e;
+}
+
+int base45_decode(unsigned char * dst, size_t * _max_dst_len, const char * src, size_t src_len) {
+  size_t out_len = 0, max_dst_len;
+  max_dst_len = _max_dst_len  ? *_max_dst_len : src_len;
+  int e = 1;
+
+  if (dst == NULL && _max_dst_len == NULL)
+	return -2;
+
+  if (src == NULL)
+	return -2;
+
+  if (src_len == 0)
+	src_len = strlen(src);
+
+  BIGNUM * result= BN_new();
+  BIGNUM * factor = BN_new();
+  BIGNUM * weight = BN_new();
+  BIGNUM * power = BN_new();
+  BIGNUM * add = BN_new();
+  BIGNUM * bigQrCharsetLen = BN_new();
+
+  BN_CTX * ctx = BN_CTX_new();
+
+  if (!(result && factor && weight && power && add && bigQrCharsetLen && ctx))
+	goto e;
+
+  BN_set_word(bigQrCharsetLen, 45UL);
+  for(int i = 0; i < src_len; i++) {
+        int c = _C2I[src[i]];
+        if (c == 255)
+	    goto e;
+
+	if (!BN_set_word(factor, (unsigned long) c) ||
+    	    !BN_set_word(power, (unsigned long) src_len - i -1) ||
+ 	    !BN_exp(weight, bigQrCharsetLen, power, ctx) ||
+            !BN_mul(add, weight, factor, ctx) ||
+            !BN_add(result, result, add))
+               goto e;
+  }
+  out_len = BN_bn2bin(result, dst);
+
+  if (_max_dst_len)
+        *_max_dst_len = out_len;
+  e = 0;
+
+e:
+  BN_free(result);
+  BN_free(factor);
+  BN_free(weight);
+  BN_free(power);
+  BN_free(add);
+  BN_free(bigQrCharsetLen);
+
+  BN_CTX_free(ctx);
+  return e;
+}
+#endif
 #ifdef BASE45_UTIL
 #include <stdio.h>
 #include <stdlib.h>
@@ -153,7 +255,7 @@ int main(int argc, char ** argv) {
 			exit(1);
 		};
 		at++; argc--;
-	};
+	}
 	if (argc > 1) {
 		if (NULL == (in = fopen(argv[at],"r"))) {
 			perror("Cannot open input file for reading:");

@@ -9,27 +9,29 @@ OBJS := $(SRCS:.c=.o)
 DEPS := $(OBJS:.o=.d)
 OBJS_TEST := test.o
 
-INC_DIRS := 
+INC_DIRS := -I/opt/local/include
 INC_FLAGS := 
+LDFLAGS := -L/opt/local/lib -lcrypto
 
-CPPFLAGS ?= $(INC_FLAGS) -MMD -MP
+CPPFLAGS ?= $(INC_FLAGS) $(INC_DIRS)
 
 tests: all $(TARGET_TEST)
 	./test
-	for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 17 19 41 42 43 103 1002 10009 100007 1000001 0; do \
+	for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 17 19 41 42 43 103 1002 2000 2108 2109 5000; do \
 		openssl rand $$i > $$TMPDIR/x; \
 	 	cat $$TMPDIR/x | ./base45 | ./base45 -d > $$TMPDIR/y; \
                 diff $$TMPDIR/x $$TMPDIR/y || exit 1; \
+		echo Length $$i ok; \
 	done; \
 	rm  $$TMPDIR/x $$TMPDIR/y 
 
 all: $(TARGET_EXEC) $(TARGET_LIB) 
 
-$(TARGET_EXEC): $(SRCS)
-	$(CC) $(SRCS) -DBASE45_UTIL -o $@ $(LDFLAGS) 
+$(TARGET_EXEC): $(OBJS)
+	$(CC) $(SRCS) $(INC_DIRS) -DBASE45_UTIL -o $@ $(LDFLAGS) 
 
 $(TARGET_TEST): $(OBJS_TEST) $(TARGET_LIB)
-	$(CC) $(OBJS_TEST) -o $@ $(LDFLAGS) -lbase45 -L.
+	$(CC) $(OBJS_TEST) -o $@ $(LDFLAGS) -lbase45 -L. 
 
 $(TARGET_LIB): $(OBJS)
 	ar -rcs $@ $<
