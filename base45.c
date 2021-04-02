@@ -156,7 +156,7 @@ int base45_encode(char * dst, size_t *_max_dst_len, const unsigned char * src, s
         out_len++;
   };
 
-  if (dst) for(int i = 0, j = out_len -1; i < j; i++, j--) {
+  if (dst) for(size_t i = 0, j = out_len -1; i < j; i++, j--) {
 	unsigned char x = dst[i]; dst[i] = dst[j]; dst[j] = x;
   };
 
@@ -184,28 +184,26 @@ int base45_decode(unsigned char * dst, size_t * _max_dst_len, const char * src, 
 	src_len = strlen(src);
 
   BIGNUM * result= BN_new();
-  BIGNUM * factor = BN_new();
   BIGNUM * weight = BN_new();
   BIGNUM * power = BN_new();
-  BIGNUM * add = BN_new();
   BIGNUM * bigQrCharsetLen = BN_new();
 
   BN_CTX * ctx = BN_CTX_new();
 
-  if (!(result && factor && weight && power && add && bigQrCharsetLen && ctx))
+  if (!(result && weight && power && bigQrCharsetLen && ctx))
 	goto e;
 
   BN_set_word(bigQrCharsetLen, 45UL);
-  for(int i = 0; i < src_len; i++) {
+
+  for(size_t i = 0; i < src_len; i++) {
         int c = _C2I[src[i]];
         if (c == 255)
 	    goto e;
 
-	if (!BN_set_word(factor, (unsigned long) c) ||
-    	    !BN_set_word(power, (unsigned long) src_len - i -1) ||
+	if (!BN_set_word(power, (unsigned long) src_len - i -1) ||
  	    !BN_exp(weight, bigQrCharsetLen, power, ctx) ||
-            !BN_mul(add, weight, factor, ctx) ||
-            !BN_add(result, result, add))
+            !BN_mul_word(weight, (unsigned long)c) ||
+            !BN_add(result, result, weight))
                goto e;
   }
   if (dst)
@@ -219,10 +217,8 @@ int base45_decode(unsigned char * dst, size_t * _max_dst_len, const char * src, 
 
 e:
   BN_free(result);
-  BN_free(factor);
   BN_free(weight);
   BN_free(power);
-  BN_free(add);
   BN_free(bigQrCharsetLen);
 
   BN_CTX_free(ctx);
