@@ -21,7 +21,7 @@
 
 static const char BASE45_CHARSET[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:";
 
-static char _C2I[256] = {
+static unsigned char _C2I[256] = {
 	255,255,255,255, 255,255,255,255, 255,255,255,255, 255,255,255,255,
 	255,255,255,255, 255,255,255,255, 255,255,255,255, 255,255,255,255,
 	36, 255,255,255,  37, 38,255,255, 255,255, 39, 40, 255, 41, 42, 43,
@@ -47,7 +47,7 @@ int base45_encode(char * dst, size_t *_max_dst_len, const unsigned char * src, s
   size_t out_len = 0, max_dst_len;
   max_dst_len = _max_dst_len ? *_max_dst_len : src_len * 4;
 
-  for(int i = 0; i < src_len; i+=2) {
+  for(unsigned i = 0; i < src_len; i+=2) {
      if (src_len - i > 1) {
         int x = ((src[i])<<8) + src[i+1];
 
@@ -88,7 +88,7 @@ int base45_encode(char * dst, size_t *_max_dst_len, const unsigned char * src, s
   return 0;
 }
 
-int base45_decode(unsigned char * dst, size_t * _max_dst_len, const char * src, size_t src_len) {
+int base45_decode(unsigned char * dst, size_t * _max_dst_len, const char *src, size_t src_len) {
   size_t out_len = 0, max_dst_len;
   max_dst_len = _max_dst_len  ? *_max_dst_len : src_len;
 
@@ -101,19 +101,19 @@ int base45_decode(unsigned char * dst, size_t * _max_dst_len, const char * src, 
   if (src_len == 0)
 	src_len = strlen(src);
 
-  for(int i = 0; i < src_len; i+=3) {
+  for(unsigned i = 0; i < src_len; i+=3) {
      int x,a,b;
 
      if (src_len - i < 2) 
-	return -1;
+	    return -1;
 
-     if ((255 == (a = _C2I[src[i]])) || (255 == (b = _C2I[src[i+1]]))) 
+     if ((255 == (a = _C2I[(unsigned char)src[i]])) || (255 == (b = _C2I[(unsigned char)src[i+1]])))
 	return -1;
 
      x = a + 45 * b;
 
      if (src_len - i >= 3) {
-        if (255 == (a = _C2I[src[i+2]])) 
+        if (255 == (a = _C2I[(unsigned char)src[i+2]]))
 	    return -1;
 
         x += a * 45 * 45;
