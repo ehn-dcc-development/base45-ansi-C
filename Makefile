@@ -14,6 +14,7 @@ INC_FLAGS :=
 
 CPPFLAGS ?= $(INC_FLAGS) -MMD -MP
 
+
 tests: all $(TARGET_TEST)
 	./test
 	for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 17 19 41 42 43 103 1002 10009 100007 1000001 0; do \

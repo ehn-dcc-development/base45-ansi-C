@@ -21,7 +21,7 @@ void check(char * in, char * out) {
 	assert(0 == bcmp(dec,in,dlen));
 
 	printf("base64(\"%s\") -> \"%s\"\n", (char*)dec, enc);
-};
+}
 
 int main(int argc, char **argv) {
  check("Hello!!","%69 VD92EX0");
@@ -30,4 +30,4 @@ int main(int argc, char **argv) {
  check("COVID-19","-M8*+A%R81A6");
  check("2021 Digital Green Certificates for travel",
 	"NF6OF6P34SED-EDAECS34ZKE1$CO345$CBWER.CGPC7WE.OEX.CBJEKWEKEC: C");
-};
+}
