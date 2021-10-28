@@ -32,7 +32,7 @@ int base45_encode(char * dstOrNull, size_t *dst_lenOrNull, const unsigned char *
    src_len		source length or 0 (in which case the terminating \0 of the string is used).
 
    If the encoded string is longer than *dst_lenOrNull the actual length will still be returned. This
-   can also be used, in combiantion with a NULL destination, to get the size of the buffer needed.
+   can also be used, in combination with a NULL destination, to get the size of the buffer needed.
 
    The decode is case-insensitive; and will give an error on unknown characters (including on \r 
    and \n). If dst_lenOrNull is null; dstOrNull, when non-null, is assumed to be of a suitable
